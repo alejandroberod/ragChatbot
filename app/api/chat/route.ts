@@ -11,6 +11,7 @@ import {
 } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
+import { auth } from "@clerk/nextjs/server";
 import { searchDocuments } from "@/lib/search";
 
 const tools = {
@@ -46,6 +47,11 @@ export type ChatMessage = UIMessage<never, UIDataTypes, ChatTools>
 
 export async function POST(req: Request) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
     const { messages }: { messages: ChatMessage[] } = await req.json();
 
     const result = streamText({

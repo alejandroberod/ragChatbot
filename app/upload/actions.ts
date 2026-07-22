@@ -1,11 +1,11 @@
 "use server"
 
 import { PDFParse } from "pdf-parse"
+import { auth } from "@clerk/nextjs/server"
 import { db } from "@/lib/db-config"
 import { documents } from "@/lib/db-schema"
 import { generateEmbeddings } from "@/lib/embeddings"
 import { chunkContent } from "@/lib/chunking"
-import { success } from "zod/v4"
 
 export async function processPdfFile(formData:FormData) {
   try {
