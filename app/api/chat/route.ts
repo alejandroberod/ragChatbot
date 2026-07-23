@@ -14,35 +14,37 @@ import { z } from "zod";
 import { auth } from "@clerk/nextjs/server";
 import { searchDocuments } from "@/lib/search";
 
-const tools = {
-  searchKnowledgeBase: tool({
-    description: "Search the knowledge base for relevant information",
-    inputSchema: z.object({
-      query: z
-        .string()
-        .describe("The search query to find relevant information"),
-    }),
-    execute: async ({ query }) => {
-      try {
-        const results = await searchDocuments(query, 3, 0.5);
-        console.log(results)
+function createTools(userId: string) {
+  return {
+    searchKnowledgeBase: tool({
+      description: "Search the knowledge base for relevant information",
+      inputSchema: z.object({
+        query: z
+          .string()
+          .describe("The search query to find relevant information"),
+      }),
+      execute: async ({ query }) => {
+        try {
+          console.log('Query', query)
+          const results = await searchDocuments(userId, query, 3, 0.15);
 
-        if (results.length == 0) {
-          return "No relevant information found in the knowledge base";
+          if (results.length == 0) {
+            return "No relevant information found in the knowledge base";
+          }
+          const formattedResults = results
+            .map((r, i) => `[${i + 1} ${r.content}]`)
+            .join("\n\n");
+          return formattedResults
+        } catch (error) {
+          console.error("Search error: ", error);
+          return "Error searching the knowledge base";
         }
-        const formattedResults = results
-          .map((r, i) => `[${i + 1} ${r.content}]`)
-          .join("\n\n");
-        return formattedResults
-      } catch (error) {
-        console.error("Search error: ", error);
-        return "Error searching the knowledge base";
-      }
-    },
-  }),
-};
+      },
+    }),
+  };
+}
 
-export type ChatTools = InferUITools<typeof tools>
+export type ChatTools = InferUITools<ReturnType<typeof createTools>>
 export type ChatMessage = UIMessage<never, UIDataTypes, ChatTools>
 
 export async function POST(req: Request) {
@@ -57,7 +59,7 @@ export async function POST(req: Request) {
     const result = streamText({
       model: openai("gpt-4.1-mini"),
       messages: await convertToModelMessages(messages),
-      tools,
+      tools: createTools(userId),
       system: `You are a helpful assistant with access to a knowledge base. 
           When users ask questions, search the knowledge base for relevant information.
           Always search before answering if the question might relate to uploaded documents.

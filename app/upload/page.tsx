@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { processPdfFile } from "./actions"
+import { useEffect, useState } from "react"
+import { processPdfFile, getCurrentDocument } from "./actions"
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,15 @@ import { Loader2 } from "lucide-react";
 
 export default function PdfUpload() {
   const [isLoading, setIsLoading] = useState(false)
+  const [isChecking, setIsChecking] = useState(true)
+  const [currentFileName, setCurrentFileName] = useState<string | null>(null)
   const [message, setMessage] = useState<{ type: 'error' | 'success', text: string } | null>(null)
+
+  useEffect(() => {
+    getCurrentDocument()
+      .then((doc) => setCurrentFileName(doc?.fileName ?? null))
+      .finally(() => setIsChecking(false));
+  }, []);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -26,6 +34,7 @@ export default function PdfUpload() {
       const result = await processPdfFile(formData);
 
       if (result.success) {
+        setCurrentFileName(file.name);
         setMessage({
           type: "success",
           text: result.message || "PDF processed successfully",
@@ -52,21 +61,34 @@ export default function PdfUpload() {
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-          PDF Upload
+          {currentFileName ? "Tu documento" : "Sube tu documento"}
         </h1>
         <Card className="mb-6">
           <CardContent className="pt-6">
             <div className="space-y-4">
+              {!isChecking && currentFileName && (
+                <p className="text-sm text-muted-foreground">
+                  Documento actual: <strong>{currentFileName}</strong>
+                </p>
+              )}
+
               <div>
-                <Label htmlFor="pdf-upload">Upload PDF File</Label>
+                <Label htmlFor="pdf-upload">
+                  {currentFileName ? "Reemplazar documento" : "Subir documento PDF"}
+                </Label>
                 <Input
                   id="pdf-upload"
                   type="file"
                   accept=".pdf"
                   onChange={handleFileUpload}
-                  disabled={isLoading}
+                  disabled={isLoading || isChecking}
                   className="mt-2"
                 />
+                {currentFileName && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Solo puedes tener un documento. Subir uno nuevo reemplaza el actual.
+                  </p>
+                )}
               </div>
 
               {isLoading && (
