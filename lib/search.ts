@@ -3,7 +3,7 @@ import { db } from "./db-config";
 import { documents } from "./db-schema";
 import { generateEmbedding } from "./embeddings";
 
-export async function searchDocuments(userId: string, query: string, limit: number = 5, threshold: number = 0.3) {
+export async function searchDocuments(userId: string, query: string, limit: number = 5, threshold: number = 0.5) {
   const embedding = await generateEmbedding(query)
 
   const similarity = sql<number>`1 - (${cosineDistance(
@@ -20,8 +20,6 @@ export async function searchDocuments(userId: string, query: string, limit: numb
   .where(and(eq(documents.userId, userId), gt(similarity, threshold)))
   .orderBy(desc(similarity))
   .limit(limit)
-
-  console.log('Similar', similarDocuments)
 
 
   return similarDocuments

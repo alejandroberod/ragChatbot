@@ -9,7 +9,7 @@ import {
   UIDataTypes,
   stepCountIs
 } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { google } from "@ai-sdk/google";
 import { z } from "zod";
 import { auth } from "@clerk/nextjs/server";
 import { searchDocuments } from "@/lib/search";
@@ -21,12 +21,18 @@ function createTools(userId: string) {
       inputSchema: z.object({
         query: z
           .string()
-          .describe("The search query to find relevant information"),
+          .describe(
+            "A self-contained, semantically rich search query. Rewrite the user's question " +
+            "as a full sentence or statement optimized for semantic search: resolve pronouns " +
+            "and references using the conversation context, expand abbreviations, and include " +
+            "relevant keywords the user implied but didn't state explicitly. Do not just copy " +
+            "the user's raw message."
+          ),
       }),
       execute: async ({ query }) => {
         try {
           console.log('Query', query)
-          const results = await searchDocuments(userId, query, 3, 0.15);
+          const results = await searchDocuments(userId, query, 3, 0.5);
 
           if (results.length == 0) {
             return "No relevant information found in the knowledge base";
@@ -57,15 +63,16 @@ export async function POST(req: Request) {
     const { messages }: { messages: ChatMessage[] } = await req.json();
 
     const result = streamText({
-      model: openai("gpt-4.1-mini"),
+      model: google("gemini-3.5-flash-lite"),
       messages: await convertToModelMessages(messages),
       tools: createTools(userId),
-      system: `You are a helpful assistant with access to a knowledge base. 
+      system: `You are a helpful assistant with access to a knowledge base.
           When users ask questions, search the knowledge base for relevant information.
           Always search before answering if the question might relate to uploaded documents.
+          When calling searchKnowledgeBase, formulate a clear, complete search query rather than repeating the user's message verbatim.
           Base your answers on the search results when available. Give concise answers that correctly answer what the user is asking for. Do not flood them with all the information from the search results.
           Answer depending on the input language, if the question is in spanish, answer in spanish, if the question is in english answer in englis`,
-      stopWhen: stepCountIs(2)
+      stopWhen: stepCountIs(3)
     });
 
     return createUIMessageStreamResponse({
@@ -75,7 +82,7 @@ export async function POST(req: Request) {
           if (part.type == "finish") {
             return {
               usage: part.totalUsage,
-              model: "gpt-4.1-mini",
+              model: "gemini-3.6-flash",
             };
           }
         },
