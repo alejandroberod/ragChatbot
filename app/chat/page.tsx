@@ -51,16 +51,16 @@ export default function RagChatbot() {
     <>
       <Show when="signed-out">
         <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
-          <h1 className="text-2xl font-semibold">Inicia sesión para usar el chat</h1>
+          <h1 className="text-2xl font-semibold">Log in to use chat</h1>
           <p className="max-w-sm text-zinc-600 dark:text-zinc-400">
-            Necesitas una cuenta para hacer preguntas sobre tu base de conocimiento.
+            You need an account to ask questions.
           </p>
           <div className="flex gap-2">
             <SignInButton mode="modal">
-              <Button variant="outline">Iniciar sesión</Button>
+              <Button variant="outline">Sign In</Button>
             </SignInButton>
             <SignUpButton mode="modal">
-              <Button>Crear cuenta</Button>
+              <Button>Sign Up</Button>
             </SignUpButton>
           </div>
         </div>

@@ -21,6 +21,14 @@ export async function getCurrentDocument() {
   return row ?? null
 }
 
+function cleanPdfText(text: string): string {
+  return text
+    .replace(/-\n/g, "")
+    .replace(/(?<!\n)\n(?!\n)/g, " ")
+    .replace(/[ \t]+/g, " ")
+    .trim()
+}
+
 export async function processPdfFile(formData: FormData) {
   try {
     const { userId } = await auth()
@@ -45,7 +53,8 @@ export async function processPdfFile(formData: FormData) {
       }
     }
 
-    const chunks = await chunkContent(data.text)
+    const cleanedText = cleanPdfText(data.text)
+    const chunks = await chunkContent(cleanedText)
     const embeddings = await generateEmbeddings(chunks)
 
     const records = chunks.map((chunk, index) => ({
