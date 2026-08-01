@@ -20,16 +20,6 @@ import {
   PromptInputTextarea,
   PromptInputTools,
 } from "@/components/ai-elements/prompt-input";
-import {
-  Context,
-  ContextTrigger,
-  ContextContent,
-  ContextContentHeader,
-  ContextContentBody,
-  ContextContentFooter,
-  ContextInputUsage,
-  ContextOutputUsage,
-} from "@/components/ai-elements/context";
 import { Spinner } from "@/components/ui/spinner";
 
 export default function RagChatbot() {
@@ -42,10 +32,6 @@ export default function RagChatbot() {
     sendMessage({text: message.text})
     setInput("")
   }
-  const lastAssistantMessage = [...messages]
-    .reverse()
-    .find((m) => m.role === "assistant" && m.metadata);
-  const usage = (lastAssistantMessage?.metadata as any)?.usage;
 
   return (
     <>
@@ -69,26 +55,6 @@ export default function RagChatbot() {
       <Show when="signed-in">
         <div className="max-w-4xl mx-auto p-6 relative size-full h-[calc(100vh-4rem)]">
           <div className="flex flex-col h-full">
-            <div className="flex justify-end mb-2">
-              {usage && (
-                <Context
-                  usedTokens={usage.inputTokens + usage.outputTokens}
-                  maxTokens={128000}
-                  usage={usage}
-                  modelId="gpt-4.1-mini"
-                >
-                  <ContextTrigger />
-                  <ContextContent>
-                    <ContextContentHeader />
-                    <ContextContentBody>
-                      <ContextInputUsage />
-                      <ContextOutputUsage />
-                    </ContextContentBody>
-                    <ContextContentFooter />
-                  </ContextContent>
-                </Context>
-              )}
-            </div>
             <Conversation className="h-full">
               <ConversationContent>
                 {messages.map((message) => (

@@ -22,6 +22,13 @@
       "when": 1784761436254,
       "tag": "0002_strong_darwin",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785536252994,
+      "tag": "0003_brave_mephistopheles",
+      "breakpoints": true
     }
   ]
 }
