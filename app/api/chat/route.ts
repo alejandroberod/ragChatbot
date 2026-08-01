@@ -12,6 +12,9 @@ import {
 import { google } from "@ai-sdk/google";
 import { z } from "zod";
 import { auth } from "@clerk/nextjs/server";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db-config";
+import { pdfFiles } from "@/lib/db-schema";
 import { searchDocuments } from "@/lib/search";
 
 function createTools(userId: string) {
@@ -32,7 +35,8 @@ function createTools(userId: string) {
       execute: async ({ query }) => {
         try {
           console.log('Query', query)
-          const results = await searchDocuments(userId, query, 3, 0.5);
+          const results = await searchDocuments(userId, query, 4, 0.5);
+          console.log("RESULTS", results)
 
           if (results.length == 0) {
             return "No relevant information found in the knowledge base";
@@ -62,16 +66,63 @@ export async function POST(req: Request) {
 
     const { messages }: { messages: ChatMessage[] } = await req.json();
 
+    const [fileRow] = await db
+      .select()
+      .from(pdfFiles)
+      .where(eq(pdfFiles.userId, userId))
+      .limit(1);
+
+    const modelMessages = await convertToModelMessages(messages);
+
+    const isFullContext = fileRow?.strategy === "full" && fileRow.fileData;
+
+    const finalMessages = isFullContext
+      ? [
+          {
+            role: "user" as const,
+            content: [
+              {
+                type: "file" as const,
+                data: Buffer.from(fileRow.fileData!, "base64"),
+                mediaType: "application/pdf",
+                filename: fileRow.fileName,
+              },
+              {
+                type: "text" as const,
+                text: "Este es el documento de referencia completo para esta conversación.",
+              },
+            ],
+          },
+          {
+            role: "assistant" as const,
+            content: "Entendido, tengo el documento completo y responderé basándome en su contenido.",
+          },
+          ...modelMessages,
+        ]
+      : modelMessages;
+
+    const mathFormattingInstructions = `If you need to write a math formula, put it in its own block delimited by $$...$$. Never use \\( \\), \\[ \\], or a single $ for math. Dollar signs used for money (e.g. $60,801) are plain text — write them normally and never escape them.`;
+
+    const system = isFullContext
+      ? `You are a helpful, general-purpose assistant that also has the user's full reference document attached at the start of this conversation.
+          If the question relates to that document (including any tables, charts or images in it), base your answer on it and don't fabricate information that isn't there.
+          If the question is unrelated to the document (general knowledge, casual conversation, etc.), just answer normally using what you know — never refuse or claim you can't answer just because it isn't in the document.
+          Give concise answers that correctly answer what the user is asking for. Do not flood them with all the information from the document.
+          Answer depending on the input language, if the question is in spanish, answer in spanish, if the question is in english answer in english.
+          ${mathFormattingInstructions}`
+      : `You are a helpful, general-purpose assistant that also has access to a knowledge base built from a document the user uploaded.
+          When a question might relate to that document, call searchKnowledgeBase first and base your answer on the results.
+          When calling searchKnowledgeBase, formulate a clear, complete search query rather than repeating the user's message verbatim.
+          If the question is unrelated to the document, or the search returns nothing relevant, just answer normally using what you know — never refuse or claim you can't answer just because it wasn't in the search results.
+          Give concise answers that correctly answer what the user is asking for. Do not flood them with all the information from the search results.
+          Answer depending on the input language, if the question is in spanish, answer in spanish, if the question is in english answer in english.
+          ${mathFormattingInstructions}`;
+
     const result = streamText({
       model: google("gemini-3.5-flash-lite"),
-      messages: await convertToModelMessages(messages),
-      tools: createTools(userId),
-      system: `You are a helpful assistant with access to a knowledge base.
-          When users ask questions, search the knowledge base for relevant information.
-          Always search before answering if the question might relate to uploaded documents.
-          When calling searchKnowledgeBase, formulate a clear, complete search query rather than repeating the user's message verbatim.
-          Base your answers on the search results when available. Give concise answers that correctly answer what the user is asking for. Do not flood them with all the information from the search results.
-          Answer depending on the input language, if the question is in spanish, answer in spanish, if the question is in english answer in englis`,
+      messages: finalMessages,
+      tools: isFullContext ? {} : createTools(userId),
+      system,
       stopWhen: stepCountIs(3)
     });
 

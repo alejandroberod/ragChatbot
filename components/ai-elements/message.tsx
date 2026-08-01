@@ -14,7 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { cjk } from "@streamdown/cjk";
 import { code } from "@streamdown/code";
-import { math } from "@streamdown/math";
+import { createMathPlugin } from "@streamdown/math";
 import { mermaid } from "@streamdown/mermaid";
 import type { UIMessage } from "ai";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
@@ -320,6 +320,10 @@ export const MessageBranchPage = ({
 };
 
 export type MessageResponseProps = ComponentProps<typeof Streamdown>;
+
+// Single-dollar inline math stays disabled: this app reports dollar-denominated
+// financial figures, and pairing single "$" delimiters as math garbles currency amounts.
+const math = createMathPlugin({ singleDollarTextMath: false });
 
 const streamdownPlugins = { cjk, code, math, mermaid };
 
