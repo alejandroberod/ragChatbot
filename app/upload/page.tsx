@@ -17,6 +17,13 @@ export default function PdfUpload() {
   useEffect(() => {
     getCurrentDocument()
       .then((doc) => setCurrentFileName(doc?.fileName ?? null))
+      .catch((err) => {
+        console.error("Failed to load current document", err);
+        setMessage({
+          type: "error",
+          text: "No se pudo cargar el documento actual",
+        });
+      })
       .finally(() => setIsChecking(false));
   }, []);
 

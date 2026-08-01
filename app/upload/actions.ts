@@ -1,5 +1,6 @@
 "use server"
 
+import "@/lib/pdf-polyfill"
 import { PDFParse } from "pdf-parse"
 import { auth } from "@clerk/nextjs/server"
 import { eq } from "drizzle-orm"
