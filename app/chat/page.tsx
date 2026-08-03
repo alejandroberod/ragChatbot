@@ -4,6 +4,7 @@ import { Fragment, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { SignInButton, SignUpButton, Show } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import {
   Conversation,
@@ -24,7 +25,7 @@ import { Spinner } from "@/components/ui/spinner";
 
 export default function RagChatbot() {
   const [input, setInput] = useState("");
-  const { messages, sendMessage, status } = useChat();
+  const { messages, sendMessage, status, error, clearError } = useChat();
 
   const handleSubmit = (message:PromptInputMessage) => {
     if (!message.text) return
@@ -81,6 +82,17 @@ export default function RagChatbot() {
               </ConversationContent>
               <ConversationScrollButton />
             </Conversation>
+
+            {error && (
+              <Alert variant="destructive" className="mt-4">
+                <AlertDescription className="flex items-center justify-between gap-2">
+                  <span>{error.message}</span>
+                  <Button variant="outline" size="sm" onClick={clearError}>
+                    Dismiss
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
 
             <PromptInput className="mt-4" onSubmit={handleSubmit}>
               <PromptInputBody>
