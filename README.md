@@ -4,7 +4,7 @@ Chatbot con RAG (Retrieval-Augmented Generation) que responde preguntas sobre do
 
 **Demo en vivo:** https://alejandrobetancourth-ragchatbot.vercel.app
 
-<img width="1994" height="1080" alt="Image" src="https://github.com/user-attachments/assets/a4392420-9088-41d6-b34a-da6d76ccecba" />
+<img width="1994" height="1080" alt="Image" src="https://github.com/user-attachments/assets/82b9abb7-76ff-4f43-bd60-150eb1173622" />
 
 ## Qué hace
 
