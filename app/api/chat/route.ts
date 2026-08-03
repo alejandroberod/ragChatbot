@@ -7,7 +7,8 @@ import {
   tool,
   InferUITools,
   UIDataTypes,
-  stepCountIs
+  stepCountIs,
+  APICallError
 } from "ai";
 import { google } from "@ai-sdk/google";
 import { z } from "zod";
@@ -89,13 +90,13 @@ export async function POST(req: Request) {
               },
               {
                 type: "text" as const,
-                text: "Este es el documento de referencia completo para esta conversación.",
+                text: "This is the full reference document for this conversation.",
               },
             ],
           },
           {
             role: "assistant" as const,
-            content: "Entendido, tengo el documento completo y responderé basándome en su contenido.",
+            content: "Understood, I have the full document and will answer based on its content.",
           },
           ...modelMessages,
         ]
@@ -129,6 +130,13 @@ export async function POST(req: Request) {
     return createUIMessageStreamResponse({
       stream: toUIMessageStream({
         stream: result.stream,
+        onError: (error) => {
+          if (APICallError.isInstance(error) && error.statusCode === 429) {
+            return "We're experiencing high traffic right now (Gemini free tier limit). Please try again in a minute.";
+          }
+          console.error("Chat stream error", error);
+          return "Something went wrong while generating the response. Please try again.";
+        },
         messageMetadata: ({ part }) => {
           if (part.type == "finish") {
             return {

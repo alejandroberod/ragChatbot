@@ -21,7 +21,7 @@ export default function PdfUpload() {
         console.error("Failed to load current document", err);
         setMessage({
           type: "error",
-          text: "No se pudo cargar el documento actual",
+          text: "Failed to load the current document",
         });
       })
       .finally(() => setIsChecking(false));
@@ -68,20 +68,20 @@ export default function PdfUpload() {
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-          {currentFileName ? "Tu documento" : "Sube tu documento"}
+          {currentFileName ? "Your document" : "Upload your document"}
         </h1>
         <Card className="mb-6">
           <CardContent className="pt-6">
             <div className="space-y-4">
               {!isChecking && currentFileName && (
                 <p className="text-sm text-muted-foreground">
-                  Documento actual: <strong>{currentFileName}</strong>
+                  Current document: <strong>{currentFileName}</strong>
                 </p>
               )}
 
               <div>
                 <Label htmlFor="pdf-upload">
-                  {currentFileName ? "Reemplazar documento" : "Subir documento PDF"}
+                  {currentFileName ? "Replace document" : "Upload PDF document"}
                 </Label>
                 <Input
                   id="pdf-upload"
@@ -93,7 +93,7 @@ export default function PdfUpload() {
                 />
                 {currentFileName && (
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Solo puedes tener un documento. Subir uno nuevo reemplaza el actual.
+                    You can only have one document. Uploading a new one replaces the current one.
                   </p>
                 )}
               </div>

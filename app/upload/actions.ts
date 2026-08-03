@@ -4,6 +4,7 @@ import "@/lib/pdf-polyfill"
 import { PDFParse } from "pdf-parse"
 import { auth } from "@clerk/nextjs/server"
 import { eq } from "drizzle-orm"
+import { APICallError, RetryError } from "ai"
 import { db } from "@/lib/db-config"
 import { documents, pdfFiles } from "@/lib/db-schema"
 import { generateEmbeddings } from "@/lib/embeddings"
@@ -66,7 +67,7 @@ export async function processPdfFile(formData: FormData) {
       if (chunks.length >= 100) {
         return {
           success: false,
-          error: "El documento es demasiado grande para procesarlo en este momento. Intenta subir un documento más corto."
+          error: "The document is too large to process right now. Try uploading a shorter document."
         }
       }
 
@@ -90,7 +91,7 @@ export async function processPdfFile(formData: FormData) {
 
       return {
         success: true,
-        message: `"${file.name}" cargado con ${records.length} fragmentos buscables`
+        message: `"${file.name}" uploaded with ${records.length} searchable chunks`
       }
     }
 
@@ -105,10 +106,29 @@ export async function processPdfFile(formData: FormData) {
 
     return {
       success: true,
-      message: `"${file.name}" cargado en modo lectura completa`
+      message: `"${file.name}" uploaded in full-read mode`
     }
   } catch (error) {
     console.error("PDF processing error", error)
+
+    if (RetryError.isInstance(error)) {
+      const lastError = error.errors[error.errors.length - 1]
+
+      if (APICallError.isInstance(lastError) && lastError.statusCode === 429) {
+        return {
+          success: false,
+          error: "We're experiencing high traffic right now (Gemini free tier limit). Please try again in a minute."
+        }
+      }
+    }
+
+    if (APICallError.isInstance(error) && error.statusCode === 429) {
+      return {
+        success: false,
+        error: "We're experiencing high traffic right now (Gemini free tier limit). Please try again in a minute."
+      }
+    }
+
     return {
       success: false,
       error: "Failed to process PDF"
