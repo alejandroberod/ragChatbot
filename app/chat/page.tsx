@@ -53,7 +53,7 @@ export default function RagChatbot() {
       </Show>
 
       <Show when="signed-in">
-        <div className="max-w-4xl mx-auto p-6 relative size-full h-[calc(100vh-4rem)]">
+        <div className="max-w-4xl mx-auto p-6 relative size-full h-[calc(100dvh-4rem)]">
           <div className="flex flex-col h-full">
             <Conversation className="h-full">
               <ConversationContent>

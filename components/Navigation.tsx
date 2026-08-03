@@ -14,23 +14,25 @@ export const Navigation = () => {
   const pathname = usePathname();
 
   return (
-        <nav className="border-b border-[var(--foreground)]/10">
-      <div className="flex container h-16 items-center justify-between px-4  mx-auto">
-        <div className="flex items-center gap-6">
+        <nav className="border-b border-(--foreground)/10">
+      <div className="flex container h-12 items-center justify-between px-4  mx-auto">
+        <div className="flex items-center gap-4 sm:gap-6">
           <div className="text-xl font-semibold">RAG Chatbot</div>
 
-          <div className="flex gap-1">
-            {links.map((link) => (
-              <Button
-                key={link.href}
-                variant={pathname === link.href ? "secondary" : "ghost"}
-                nativeButton={false}
-                render={<Link href={link.href} />}
-              >
-                {link.label}
-              </Button>
-            ))}
-          </div>
+          <Show when="signed-in">
+            <div className="flex gap-1">
+              {links.map((link) => (
+                <Button
+                  key={link.href}
+                  variant={pathname === link.href ? "secondary" : "ghost"}
+                  nativeButton={false}
+                  render={<Link href={link.href} />}
+                >
+                  {link.label}
+                </Button>
+              ))}
+            </div>
+          </Show>
         </div>
 
         <div className="flex gap-2">
