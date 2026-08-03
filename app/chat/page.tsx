@@ -4,6 +4,7 @@ import { Fragment, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { SignInButton, SignUpButton, Show } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import {
   Conversation,
@@ -24,7 +25,7 @@ import { Spinner } from "@/components/ui/spinner";
 
 export default function RagChatbot() {
   const [input, setInput] = useState("");
-  const { messages, sendMessage, status } = useChat();
+  const { messages, sendMessage, status, error, clearError } = useChat();
 
   const handleSubmit = (message:PromptInputMessage) => {
     if (!message.text) return
@@ -53,7 +54,7 @@ export default function RagChatbot() {
       </Show>
 
       <Show when="signed-in">
-        <div className="max-w-4xl mx-auto p-6 relative size-full h-[calc(100vh-4rem)]">
+        <div className="max-w-4xl mx-auto p-6 relative size-full h-[calc(100dvh-4rem)]">
           <div className="flex flex-col h-full">
             <Conversation className="h-full">
               <ConversationContent>
@@ -81,6 +82,17 @@ export default function RagChatbot() {
               </ConversationContent>
               <ConversationScrollButton />
             </Conversation>
+
+            {error && (
+              <Alert variant="destructive" className="mt-4">
+                <AlertDescription className="flex items-center justify-between gap-2">
+                  <span>{error.message}</span>
+                  <Button variant="outline" size="sm" onClick={clearError}>
+                    Dismiss
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
 
             <PromptInput className="mt-4" onSubmit={handleSubmit}>
               <PromptInputBody>
