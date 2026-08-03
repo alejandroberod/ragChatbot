@@ -8,7 +8,8 @@ import {
   InferUITools,
   UIDataTypes,
   stepCountIs,
-  APICallError
+  APICallError,
+  RetryError
 } from "ai";
 import { google } from "@ai-sdk/google";
 import { z } from "zod";
@@ -131,8 +132,18 @@ export async function POST(req: Request) {
       stream: toUIMessageStream({
         stream: result.stream,
         onError: (error) => {
+          if (RetryError.isInstance(error)) {
+            const lastError = error.errors[error.errors.length - 1]
+
+            if (APICallError.isInstance(lastError) && lastError.statusCode === 429) {
+              console.error("Chat stream error (rate limited)", error)
+              return "We're experiencing high traffic right now (Gemini free tier limit). Please try again in a minute."
+            }
+          }
+
           if (APICallError.isInstance(error) && error.statusCode === 429) {
-            return "We're experiencing high traffic right now (Gemini free tier limit). Please try again in a minute.";
+            console.error("Chat stream error (rate limited)", error)
+            return "We're experiencing high traffic right now (Gemini free tier limit). Please try again in a minute."
           }
           console.error("Chat stream error", error);
           return "Something went wrong while generating the response. Please try again.";
