@@ -4,6 +4,8 @@ Chatbot con RAG (Retrieval-Augmented Generation) que responde preguntas sobre do
 
 **Demo en vivo:** https://alejandrobetancourth-ragchatbot.vercel.app
 
+<img width="1994" height="1080" alt="Image" src="https://github.com/user-attachments/assets/a4392420-9088-41d6-b34a-da6d76ccecba" />
+
 ## Qué hace
 
 1. El usuario inicia sesión y sube un PDF.
@@ -38,10 +40,6 @@ Chat (streaming) ──── tool call "searchKnowledgeBase" ───┘
 - **IA:** Vercel AI SDK, Google Gemini (`gemini-3.6-flash`)
 - **UI:** Tailwind CSS v4, Radix/shadcn
 - **Deploy:** Vercel
-
-## Capturas
-
-_(pendiente — se agregan en el siguiente paso)_
 
 ## Getting started
 
