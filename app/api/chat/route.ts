@@ -120,7 +120,7 @@ export async function POST(req: Request) {
           ${mathFormattingInstructions}`;
 
     const result = streamText({
-      model: google("gemini-3.5-flash-lite"),
+      model: google("gemini-3.6-flash"),
       messages: finalMessages,
       tools: isFullContext ? {} : createTools(userId),
       system,
