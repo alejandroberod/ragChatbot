@@ -16,17 +16,10 @@ Chatbot con RAG (Retrieval-Augmented Generation) que responde preguntas sobre do
 
 ## Cómo funciona
 
-```
-Upload PDF
-   │
-   ├─ estrategia "rag"  → chunking → embeddings → Postgres (pgvector, índice HNSW)
-   │                                                     │
-   └─ estrategia "full" → PDF completo en base64 en DB   │
-                                                          │
-Chat (streaming) ──── tool call "searchKnowledgeBase" ───┘
-   │
-   └─ Gemini (Vercel AI SDK) genera la respuesta
-```
+<img width="1057" height="781" alt="Image" src="https://github.com/user-attachments/assets/927bb1f3-dc2a-41df-b37f-45aac4fa9227" />
+
+
+<img width="1119" height="738" alt="Image" src="https://github.com/user-attachments/assets/d3f76caf-058c-4b32-8b1c-939eb86fcc01" />
 
 - La búsqueda es **agéntica**: el modelo decide cuándo llamar a `searchKnowledgeBase` y reformula la pregunta del usuario en una query semánticamente rica antes de buscar.
 - El retrieval usa similitud coseno sobre los embeddings, filtrado por usuario, con un índice HNSW para que la búsqueda escale.
@@ -37,7 +30,7 @@ Chat (streaming) ──── tool call "searchKnowledgeBase" ───┘
 - **Framework:** Next.js 16 (App Router) + TypeScript
 - **Auth:** Clerk
 - **Base de datos:** Neon (Postgres serverless) + pgvector, Drizzle ORM
-- **IA:** Vercel AI SDK, Google Gemini (`gemini-3.6-flash`)
+- **IA:** Vercel AI SDK, Google Gemini (`gemini-3.5-flash-lite`)
 - **UI:** Tailwind CSS v4, Radix/shadcn
 - **Deploy:** Vercel
 

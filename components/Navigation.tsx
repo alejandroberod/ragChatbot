@@ -17,7 +17,7 @@ export const Navigation = () => {
         <nav className="border-b border-(--foreground)/10">
       <div className="flex container h-12 items-center justify-between px-4  mx-auto">
         <div className="flex items-center gap-4 sm:gap-6">
-          <div className="text-xl font-semibold">RAG Chatbot</div>
+          <div className="text-xl font-semibold">RAG AI</div>
 
           <Show when="signed-in">
             <div className="flex gap-1">
